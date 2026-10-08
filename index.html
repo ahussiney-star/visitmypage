@@ -140,13 +140,19 @@
             color: white;
             border-color: #d90429;
         }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #0077b6;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>🔬 بوابة مشاريع معلمي العلوم</h1>
-    <p class="subtitle">استكشف مواقع الويب التعليمية المبتكرة وادعم زملائك بالإعجاب</p>
+    <p class="subtitle">استكشف مواقع الويب التعليمية المبتكرة وادعم زملائك بالإعجاب (محفوظ سحابياً عبر Google Sheets)</p>
 
     <!-- نموذج إضافة موقع -->
     <div class="form-section">
@@ -182,7 +188,7 @@
                     <input type="text" id="websiteDesc" placeholder="مثال: موقع تفاعلي لشرح تجارب الكيمياء العضوية باستخدام PhET" required>
                 </div>
                 <div class="form-group full-width">
-                    <button type="submit" class="btn-submit">نشر وإضافة الموقع</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">نشر وإضافة الموقع</button>
                 </div>
             </div>
         </form>
@@ -200,82 +206,4 @@
                     <th>التقييم (الإعجابات)</th>
                 </tr>
             </thead>
-            <tbody id="websitesTableBody">
-                <!-- يتم تعبئة البيانات ديناميكياً عبر الجافاسكريبت -->
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-    // استرجاع البيانات من التخزين المحلي أو البدء بجدول فارغ
-    let websites = JSON.parse(localStorage.getItem('scienceWebsites')) || [];
-
-    const form = document.getElementById('websiteForm');
-    const tableBody = document.getElementById('websitesTableBody');
-
-    function renderTable() {
-        tableBody.innerHTML = '';
-        if (websites.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="4" style="color:#778899; padding:20px;">لا توجد مواقع مضافة حالياً. كن أول المشاركين!</td></tr>`;
-            return;
-        }
-
-        websites.forEach((site, index) => {
-            const tr = document.createElement('tr');
-            
-            tr.innerHTML = `
-                <td><strong>${site.name}</strong></td>
-                <td>${site.desc}</td>
-                <td><a href="${site.url}" target="_blank" class="visit-btn">زيارة الموقع</a></td>
-                <td>
-                    <button class="like-btn ${site.isLiked ? 'liked' : ''}" onclick="toggleLike(${index})">
-                        ❤️ إعجاب <span class="like-count">(${site.likes || 0})</span>
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
-    }
-
-    // إضافة موقع جديد
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const name = document.getElementById('teacherName').value;
-        const url = document.getElementById('websiteUrl').value;
-        const desc = document.getElementById('websiteDesc').value;
-
-        websites.push({
-            id: Date.now(),
-            name,
-            url,
-            desc,
-            likes: 0,
-            isLiked: false
-        });
-
-        localStorage.setItem('scienceWebsites', JSON.stringify(websites));
-        form.reset();
-        renderTable();
-    });
-
-    // دالة التعامل مع زر اللايك
-    function toggleLike(index) {
-        if (!websites[index].isLiked) {
-            websites[index].likes = (websites[index].likes || 0) + 1;
-            websites[index].isLiked = true;
-        } else {
-            websites[index].likes = Math.max(0, (websites[index].likes || 1) - 1);
-            websites[index].isLiked = false;
-        }
-
-        localStorage.setItem('scienceWebsites', JSON.stringify(websites));
-        renderTable();
-    }
-
-    // التشغيل الأول
-    renderTable();
-</script>
-
-</body>
-</html>
+            <tbody id="

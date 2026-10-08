@@ -206,4 +206,112 @@
                     <th>التقييم (الإعجابات)</th>
                 </tr>
             </thead>
-            <tbody id="
+            <tbody id="websitesTableBody">
+                <tr><td colspan="4" class="loading">جاري تحميل البيانات من السحابة...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // رابط الـ Web App المحدث الخاص بك
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWwmhDSlykogTzF9Ju58oSK27FmcSh3pVHTC0hs_ctVBcj9v5CDsTyDucG78Bp5EPD/exec';
+
+    const form = document.getElementById('websiteForm');
+    const tableBody = document.getElementById('websitesTableBody');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // جلب البيانات من جوجل شيت عند فتح الصفحة
+    function fetchWebsites() {
+        fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                renderTable(data);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                tableBody.innerHTML = `<tr><td colspan="4" style="color:red; padding:20px;">تعذر الاتصال بقاعدة البيانات. تأكد من اتصال الإنترنت.</td></tr>`;
+            });
+    }
+
+    function renderTable(websites) {
+        tableBody.innerHTML = '';
+        if (!websites || websites.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="4" style="color:#778899; padding:20px;">لا توجد مواقع مضافة حالياً. كن أول المشاركين!</td></tr>`;
+            return;
+        }
+
+        websites.forEach((site) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${site.name}</strong></td>
+                <td>${site.desc}</td>
+                <td><a href="${site.url}" target="_blank" class="visit-btn">زيارة الموقع</a></td>
+                <td>
+                    <button class="like-btn" onclick="sendLike('${site.name}')">
+                        ❤️ إعجاب <span class="like-count">(${site.likes || 0})</span>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // إضافة موقع جديد وإرساله لجوجل شيت
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جاري الحفظ...';
+
+        const name = document.getElementById('teacherName').value;
+        const url = document.getElementById('websiteUrl').value;
+        const desc = document.getElementById('websiteDesc').value;
+
+        const formData = new URLSearchParams();
+        formData.append('action', 'add');
+        formData.append('name', name);
+        formData.append('desc', desc);
+        formData.append('url', url);
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            form.reset();
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'نشر وإضافة الموقع';
+            fetchWebsites(); // تحديث الجدول مباشرة من السحابة
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء الحفظ، يرجى المحاولة مرة أخرى.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'نشر وإضافة الموقع';
+        });
+    });
+
+    // إرسال إعجاب وتحديثه سحابياً بالاعتماد على اسم المعلم
+    function sendLike(name) {
+        const formData = new URLSearchParams();
+        formData.append('action', 'like');
+        formData.append('name', name);
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            fetchWebsites(); // إعادة تحميل البيانات لتحديث العدادات لكل الزوار
+        })
+        .catch(error => console.error('Error liking:', error));
+    }
+
+    // استدعاء البيانات أول ما الصفحة تفتح
+    fetchWebsites();
+</script>
+
+</body>
+</html>

@@ -116,23 +116,29 @@
         .visit-btn:hover {
             background-color: #21867a;
         }
-        /* نظام النجوم */
-        .rating-stars {
-            font-size: 22px;
+        /* زر اللايك */
+        .like-btn {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            color: #495057;
+            padding: 6px 14px;
+            border-radius: 20px;
             cursor: pointer;
-            color: #ccc;
-            display: inline-block;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
-        .rating-stars .star {
-            transition: color 0.2s;
+        .like-btn:hover {
+            background-color: #e2e6ea;
+            border-color: #dae0e5;
         }
-        .rating-stars .star.active {
-            color: #ffb703;
-        }
-        .rating-count {
-            font-size: 12px;
-            color: #666;
-            margin-top: 3px;
+        .like-btn.liked {
+            background-color: #e63946;
+            color: white;
+            border-color: #d90429;
         }
     </style>
 </head>
@@ -140,7 +146,7 @@
 
 <div class="container">
     <h1>🔬 بوابة مشاريع معلمي العلوم</h1>
-    <p class="subtitle">استكشف مواقع الويب التعليمية المبتكرة وقيّم أعمال زملائك</p>
+    <p class="subtitle">استكشف مواقع الويب التعليمية المبتكرة وادعم زملائك بالإعجاب</p>
 
     <!-- نموذج إضافة موقع -->
     <div class="form-section">
@@ -191,7 +197,7 @@
                     <th>اسم المعلم</th>
                     <th>وصف الموقع</th>
                     <th>رابط الموقع</th>
-                    <th>التقييم (Rating)</th>
+                    <th>التقييم (الإعجابات)</th>
                 </tr>
             </thead>
             <tbody id="websitesTableBody">
@@ -223,14 +229,9 @@
                 <td>${site.desc}</td>
                 <td><a href="${site.url}" target="_blank" class="visit-btn">زيارة الموقع</a></td>
                 <td>
-                    <div class="rating-stars" data-index="${index}">
-                        <span class="star ${site.rating >= 1 ? 'active' : ''}" data-value="1">★</span>
-                        <span class="star ${site.rating >= 2 ? 'active' : ''}" data-value="2">★</span>
-                        <span class="star ${site.rating >= 3 ? 'active' : ''}" data-value="3">★</span>
-                        <span class="star ${site.rating >= 4 ? 'active' : ''}" data-value="4">★</span>
-                        <span class="star ${site.rating >= 5 ? 'active' : ''}" data-value="5">★</span>
-                    </div>
-                    <div class="rating-count">(${site.votes || 0} تقييمات)</div>
+                    <button class="like-btn ${site.isLiked ? 'liked' : ''}" onclick="toggleLike(${index})">
+                        ❤️ إعجاب <span class="like-count">(${site.likes || 0})</span>
+                    </button>
                 </td>
             `;
             tableBody.appendChild(tr);
@@ -249,8 +250,8 @@
             name,
             url,
             desc,
-            rating: 0,
-            votes: 0
+            likes: 0,
+            isLiked: false
         });
 
         localStorage.setItem('scienceWebsites', JSON.stringify(websites));
@@ -258,21 +259,19 @@
         renderTable();
     });
 
-    // التفاعل مع النجوم للتقييم
-    tableBody.addEventListener('click', function(e) {
-        if (e.target.classList.contains('star')) {
-            const starElem = e.target;
-            const container = starElem.parentElement;
-            const index = container.getAttribute('data-index');
-            const selectedValue = parseInt(starElem.getAttribute('data-value'));
-
-            websites[index].rating = selectedValue;
-            websites[index].votes = (websites[index].votes || 0) + 1;
-
-            localStorage.setItem('scienceWebsites', JSON.stringify(websites));
-            renderTable();
+    // دالة التعامل مع زر اللايك
+    function toggleLike(index) {
+        if (!websites[index].isLiked) {
+            websites[index].likes = (websites[index].likes || 0) + 1;
+            websites[index].isLiked = true;
+        } else {
+            websites[index].likes = Math.max(0, (websites[index].likes || 1) - 1);
+            websites[index].isLiked = false;
         }
-    });
+
+        localStorage.setItem('scienceWebsites', JSON.stringify(websites));
+        renderTable();
+    }
 
     // التشغيل الأول
     renderTable();
